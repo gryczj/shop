@@ -1,0 +1,33 @@
+version: '3.3'
+
+services:
+  shop:
+    container_name: shop-server
+    image: shop-server:1.0.0
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: npm run start:dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+  mysqldb:
+    image: mysql:8.0
+    cap_add:
+      - SYS_NICE
+    restart: always
+    command: --init-file /docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_DATABASE=shop
+      - MYSQL_ROOT_PASSWORD=pass123
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysqldb:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  mysqldb:
+    driver: local
